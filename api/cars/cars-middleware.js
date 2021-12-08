@@ -16,24 +16,20 @@ const checkCarId = async (req, res, next) => {
   }
 }
 
-const requirements = 'Vin, make, model and mileage are required';
+//const requirements = 'Vin, make, model and mileage are required';
 
 const carsSchema = yup.object().shape({
   vin: yup.string()
-    .typeError('Vin is missing')
     .trim()
-    .required(requirements),
+    .required('vin is missing'),
   make: yup.string()
-    .typeError('Make is missing')
     .trim()
-    .required(requirements),
+    .required('make is missing'),
   model: yup.string()
-    .typeError('Model is missing')
     .trim()
-    .required(requirements),
+    .required('model is missing'),
   mileage: yup.number()
-    .typeError('Mileage is missing')
-    .required(requirements)
+    .required('mileage is missing')
 });
 
 const checkCarPayload = async (req, res, next) => {
@@ -57,8 +53,17 @@ const checkVinNumberValid = (req, res, next) => {
   }
 }
 
-const checkVinNumberUnique = (req, res, next) => {
-  next()
+const checkVinNumberUnique = async (req, res, next) => {
+  try {
+    const existing = await Car.getByVin(req.body.vin)
+    if (!existing) {
+      next()
+    } else {
+      next({ status: 400, message: `vin ${req.body.vin} already exists`})
+    }
+  } catch (err) {
+    next(err)
+  }
 }
 
 const errorHandling = (err, req, res, next) => {
