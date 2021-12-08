@@ -1,4 +1,5 @@
 const Car = require('./cars-model');
+const yup = require('yup');
 
 const checkCarId = async (req, res, next) => {
   try {
@@ -14,16 +15,42 @@ const checkCarId = async (req, res, next) => {
   }
 }
 
-const checkCarPayload = (req, res, next) => {
-  // DO YOUR MAGIC
+const requirements = 'Vin, make, model and mileage are required';
+
+const carsSchema = yup.object().shape({
+  vin: yup.string()
+    .typeError('Vin is missing')
+    .trim()
+    .required(requirements),
+  make: yup.string()
+    .typeError('Make is missing')
+    .trim()
+    .required(requirements),
+  model: yup.string()
+    .typeError('Model is missing')
+    .trim()
+    .required(requirements),
+  mileage: yup.number()
+    .typeError('Mileage is missing')
+    .required(requirements)
+});
+
+const checkCarPayload = async (req, res, next) => {
+  try {
+    const validated = await carsSchema.validate(req.body)
+    req.body = validated
+    next()
+  } catch (err) {
+    next({ status: 400, message: err.errors[0]})
+  }
 }
 
 const checkVinNumberValid = (req, res, next) => {
-  // DO YOUR MAGIC
+  next()
 }
 
 const checkVinNumberUnique = (req, res, next) => {
-  // DO YOUR MAGIC
+  next()
 }
 
 const errorHandling = (err, req, res, next) => {
